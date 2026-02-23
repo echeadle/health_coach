@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from datetime import date
 from pathlib import Path
 
 import pytest
 
 from health_coach import cli
-from health_coach.models import DayInterview, DaySummary, PeriodCheckin, WeeklySession
 
 
 def test_cli_no_pdf_no_worksheet_returns_zero_when_inbox_empty(
@@ -75,10 +73,9 @@ def test_worksheet_only_day_filter_writes_single_day_file(tmp_path: Path, monkey
     assert out.exists()
 
 
-def test_pdf_flow_archives_source_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_pdf_flow_uses_agent_for_inbox_pdf(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     inbox = tmp_path / "inbox"
     reports = tmp_path / "reports"
-    archive = tmp_path / "archive"
     inbox.mkdir()
     source_pdf = inbox / "weekly.pdf"
     source_pdf.write_text("placeholder", encoding="utf-8")
@@ -87,46 +84,23 @@ def test_pdf_flow_archives_source_pdf(tmp_path: Path, monkeypatch: pytest.Monkey
         "sys.argv",
         [
             "prog",
-            "--inbox",
-            str(inbox),
-            "--reports",
-            str(reports),
-            "--archive",
-            str(archive),
-            "--non-interactive",
-        ],
-    )
-
-    monkeypatch.setattr(
-        cli,
-        "parse_pdf",
-        lambda _path: ("Edward Cheadle", [DaySummary(day=date(2026, 2, 22), meals=[], activity=[])]),
-    )
-    monkeypatch.setattr(
-        cli,
-        "run_interview",
-        lambda **_kwargs: WeeklySession(
-            patient_name="Edward Cheadle",
-            start=date(2026, 2, 22),
-            end=date(2026, 2, 22),
-            days=[
-                DayInterview(
-                    day=date(2026, 2, 22),
-                    meals=[],
-                    activity=[],
-                    checkins=[PeriodCheckin(period="After Breaking Fast", time_of_day=None, energy="Not provided", mood="Not provided")],
-                )
+                "--inbox",
+                str(inbox),
+                "--reports",
+                str(reports),
+                "--non-interactive",
             ],
-            source_pdf="weekly.pdf",
-        ),
-    )
-    monkeypatch.setattr(cli, "build_weekly_report", lambda _session: "# report\n")
-    monkeypatch.setattr(cli, "build_mood_intake_worksheet", lambda _session: "# worksheet\n")
+        )
+
+    calls: list[Path] = []
+
+    def fake_run_pdf_agent(args, pdf_path: Path) -> int:  # type: ignore[no-untyped-def]
+        calls.append(pdf_path)
+        return 0
+
+    monkeypatch.setattr(cli, "run_pdf_agent", fake_run_pdf_agent)
 
     rc = cli.run()
 
     assert rc == 0
-    assert (reports / "report_2026-02-22_to_2026-02-22.md").exists()
-    assert (reports / "mood_intake_2026-02-22_to_2026-02-22.md").exists()
-    assert (archive / "clarity_2026-02-22_to_2026-02-22.pdf").exists()
-    assert not source_pdf.exists()
+    assert calls == [source_pdf]

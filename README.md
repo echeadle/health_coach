@@ -6,7 +6,7 @@ Agent-driven weekly Clarity report workflow.
 
 ```bash
 uv venv
-uv sync --extra dev
+uv sync --extra dev --extra web
 uv run python scripts/run_agent.py
 ```
 
@@ -38,4 +38,10 @@ After successful PDF processing:
 
 ```bash
 uv run pytest
+```
+
+- Run Streamlit UI (local):
+
+```bash
+uv run streamlit run scripts/streamlit_app.py
 ```
