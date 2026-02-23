@@ -1,0 +1,25 @@
+[project]
+name = "health-coach"
+version = "0.1.0"
+description = "Agent-driven Clarity interview and report generator"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+  "python-dotenv>=1.0.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.0.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

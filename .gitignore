@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual envs
+.venv/
+venv/
+
+# Test/cache artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build/package artifacts
+*.egg-info/
+build/
+dist/
+
+# Local env
+.env
+
+# Generated outputs
+Reports/*.md
+Reports/*.json
+Clarity_Reports/*.pdf
+Clarity_Inbox/*.pdf
+
+# Keep directory structure
+!Reports/.gitkeep
+!Clarity_Reports/.gitkeep
+!Clarity_Inbox/.gitkeep
